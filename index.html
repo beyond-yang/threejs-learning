@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>threejs</title>
+  </head>
+  <body>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./threejs/build/three.module.js",
+          "three/addons/": "./threejs/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module">
+      // 现在浏览器支持ES6语法，自然包括import方式引入js文件
+      import * as THREE from "three";
+      // 引入轨道控制器扩展库OrbitControls.js
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+      // AxesHelper：辅助观察的坐标系
+      const axesHelper = new THREE.AxesHelper(150);
+      // 创建3D场景对象Scene
+      const scene = new THREE.Scene();
+      scene.add(axesHelper);
+
+      // 三维样条曲线
+      const path = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-50, 20, 90),
+        new THREE.Vector3(-10, 40, 40),
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(60, -60, 0),
+        new THREE.Vector3(90, -40, 60),
+        new THREE.Vector3(120, 30, 30),
+      ]);
+
+      // 样条曲线path作为TubeGeometry参数生成管道
+      const geometry = new THREE.TubeGeometry(path, 200, 5, 30);
+      const texLoader = new THREE.TextureLoader();
+      //纹理贴图
+      const texture = texLoader.load("./img/apple.png");
+      //UV坐标U方向阵列模式
+      texture.wrapS = THREE.RepeatWrapping;
+      //纹理沿着管道方向阵列(UV坐标U方向)
+      texture.repeat.x = 10;
+      const material = new THREE.MeshLambertMaterial({
+        map: texture,
+        side: THREE.DoubleSide, //双面显示看到管道内壁
+      });
+      const mesh = new THREE.Mesh(geometry, material);
+      // 设置产生投影的网格模型
+      mesh.castShadow = true;
+      // 设置接收阴影的投影面
+      mesh.receiveShadow = true;
+
+      // mesh.position.set(0, 10, 0);
+      scene.add(mesh);
+
+      // width和height用来设置Three.js输出的Canvas画布尺寸(像素px)
+      const width = 800; //宽度
+      const height = 500; //高度
+      // 30:视场角度, width / height:Canvas画布宽高比, 1:近裁截面, 3000：远裁截面
+      const camera = new THREE.PerspectiveCamera(90, width / height, 1, 3000);
+      // const camera = new THREE.OrthographicCamera(
+      //   300,
+      //   -300,
+      //   -300,
+      //   300,
+      //   1,
+      //   3000
+      // );
+      // // 根据需要设置相机位置具体值
+      // camera.position.set(200, 200, 200);
+      // //相机观察目标指向Threejs 3D空间中某个位置
+      // camera.lookAt(0, 0, 0); //坐标原点
+
+      const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+      scene.add(ambient);
+      // // 1.0：光照强度intensity
+      // const spotLight = new THREE.SpotLight(0xffffff, 1.0);
+      // spotLight.castShadow = true;
+      // spotLight.intensity = 10000000.0; //光照强度
+      // // 设置聚光光源发散角度
+      // spotLight.angle = Math.PI / 6; //光锥角度的二分之一
+      // spotLight.position.set(0, 1000, 0);
+      // console.log("聚光源指向目标", spotLight.target);
+      // scene.add(spotLight); //光源添加到场景中
+
+      // const spotLightHelper = new THREE.SpotLightHelper(spotLight, 0xffffff);
+      // scene.add(spotLightHelper);
+
+      // 平行光
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight.position.set(0, 1000, 0);
+      // 平行光设置产生阴影的光源对象,开启光源阴影的计算功能
+      directionalLight.castShadow = true;
+
+      // 可视化平行光阴影对应的正投影相机对象
+      const cameraHelper = new THREE.CameraHelper(
+        directionalLight.shadow.camera
+      );
+      scene.add(cameraHelper);
+
+      // 创建渲染器对象
+      const renderer = new THREE.WebGLRenderer();
+      // 设置渲染器，允许光源阴影渲染
+      renderer.shadowMap.enabled = true;
+      renderer.setSize(width, height); //设置three.js渲染区域的尺寸(像素px)
+      renderer.setClearColor(0xb9d3ff, 1.0);
+      renderer.render(scene, camera); //执行渲染操作
+      document.body.appendChild(renderer.domElement);
+
+      // 设置相机控件轨道控制器OrbitControls
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.minPolarAngle = 0; //默认值0
+      controls.maxPolarAngle = Math.PI; //默认值Math.PI
+      // 左右旋转范围
+      controls.minAzimuthAngle = -Math.PI / 2;
+      controls.maxAzimuthAngle = Math.PI / 2;
+      //相机位置与目标观察点距离
+      // const dis = controls.getDistance();
+      // console.log("dis", dis);
+      // 如果OrbitControls改变了相机参数，重新调用渲染器渲染三维场景
+      controls.addEventListener("change", function () {
+        renderer.render(scene, camera); //执行渲染操作
+      }); //监听鼠标、键盘事件
+
+      // 从曲线上等间距获取一定数量点坐标
+      const pointsArr = path.getSpacedPoints(500);
+      // 渲染循环
+      let i = 0; //在渲染循环中累加变化
+      function render() {
+        if (i < pointsArr.length - 1) {
+          // 相机位置设置在当前点位置
+          camera.position.copy(pointsArr[i]);
+          // 曲线上当前点pointsArr[i]和下一个点pointsArr[i+1]近似模拟当前点曲线切线
+          // 设置相机观察点为当前点的下一个点，相机视线和当前点曲线切线重合
+          camera.lookAt(pointsArr[i + 1]);
+          i += 1; //调节速度
+        } else {
+          i = 0;
+        }
+        renderer.render(scene, camera);
+        // requestAnimationFrame(render);
+      }
+      render();
+    </script>
+  </body>
+</html>
