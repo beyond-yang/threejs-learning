@@ -33,9 +33,10 @@
       const scene = new THREE.Scene();
       scene.add(axesHelper);
 
-      const mapGrpup = new THREE.Group();
-      mapGrpup.name = "地图边界线";
-      scene.add(mapGrpup);
+      const lineGroup = new THREE.Group();
+      lineGroup.name = "地图边界线";
+      lineGroup.position.z = 0.2;
+      scene.add(lineGroup);
       const shapGroup = new THREE.Group();
       shapGroup.name = "地图区域填充轮廓";
       scene.add(shapGroup);
@@ -47,7 +48,7 @@
           if (item.geometry.type == "Polygon") {
             item.geometry.coordinates = [item.geometry.coordinates];
           }
-          mapGrpup.add(getBoundaryLine(item.geometry.coordinates));
+          lineGroup.add(getBoundaryLine(item.geometry.coordinates));
           shapGroup.add(getMeshShap(item.geometry.coordinates));
         });
         console.log("scene", scene);
