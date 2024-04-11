@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>threejs</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "../../threejs/build/three.module.js",
+          "three/addons/": "../../threejs/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module">
+      // 现在浏览器支持ES6语法，自然包括import方式引入js文件
+      import * as THREE from "three";
+      // 引入轨道控制器扩展库OrbitControls.js
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+      import { getLine, getBoundaryLine } from "./line.js";
+      // AxesHelper：辅助观察的坐标系
+      const axesHelper = new THREE.AxesHelper(150);
+      // 创建3D场景对象Scene
+      const scene = new THREE.Scene();
+      scene.add(axesHelper);
+
+      const mapGrpup = new THREE.Group();
+      scene.add(mapGrpup);
+      const loader = new THREE.FileLoader();
+      loader.setResponseType("json");
+      loader.load("./world.json", (data) => {
+        data.features.forEach((item) => {
+          // 把单区域和多区域修改为一样的数据结构，统一处理
+          if (item.geometry.type == "Polygon") {
+            item.geometry.coordinates = [item.geometry.coordinates];
+          }
+          mapGrpup.add(getBoundaryLine(item.geometry.coordinates));
+        });
+        console.log(data);
+      });
+
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const k = width / height;
+      const s = 90;
+      const camera = new THREE.OrthographicCamera(
+        -s * k,
+        s * k,
+        s,
+        -s,
+        1,
+        1000
+      );
+      // 根据需要设置相机位置具体值
+      camera.position.set(0, 0, 100);
+      //相机观察目标指向Threejs 3D空间中某个位置
+      camera.lookAt(0, 0, 0); //坐标原点
+
+      // 创建渲染器对象
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(width, height); //设置three.js渲染区域的尺寸(像素px)
+      renderer.setClearColor(0x000000, 1.0);
+
+      document.body.appendChild(renderer.domElement);
+      renderer.render(scene, camera); //执行渲染操作
+
+      // 设置相机控件轨道控制器OrbitControls
+      const controls = new OrbitControls(camera, renderer.domElement);
+
+      controls.addEventListener("change", function (data) {
+        console.log("相机参数=======", data);
+        renderer.render(scene, camera); //执行渲染操作
+      }); //监听鼠标、键盘事件
+    </script>
+  </body>
+</html>
