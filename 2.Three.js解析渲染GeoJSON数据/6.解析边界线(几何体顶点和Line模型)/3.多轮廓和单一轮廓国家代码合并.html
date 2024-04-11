@@ -44,7 +44,7 @@
           }
           mapGrpup.add(getBoundaryLine(item.geometry.coordinates));
         });
-        console.log(data);
+        renderer.render(scene, camera); //执行渲染操作
       });
 
       const width = window.innerWidth;
