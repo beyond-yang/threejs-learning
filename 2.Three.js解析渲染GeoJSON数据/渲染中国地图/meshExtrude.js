@@ -1,17 +1,17 @@
 import * as THREE from 'three';
 
-const getExtrudeShapMesh = (shapeArr) => {
+const getExtrudeShapMesh = (shapeArr, height) => {
   const shapeGeometry = new THREE.ExtrudeGeometry(shapeArr, {
-    depth: 2, //拉伸长度
+    depth: height, //拉伸长度
     bevelEnabled: false, //禁止倒角,默认true
   });
-  const material = new THREE.MeshBasicMaterial({
+  const material = new THREE.MeshLambertMaterial({
     color: 0x004444,
   });
   const mesh = new THREE.Mesh(shapeGeometry, material);
   return mesh
 };
-const getExtrudeMeshShap = (coordinates) => {
+const getExtrudeMeshShap = (coordinates, height) => {
   // const group = new THREE.Group();
   const shapeArr = [];
     // 多个图形绘制
@@ -26,7 +26,7 @@ const getExtrudeMeshShap = (coordinates) => {
       shapeArr.push(shape);
    
   });
-  return getExtrudeShapMesh(shapeArr);
+  return getExtrudeShapMesh(shapeArr, height);
 };
 
 export {

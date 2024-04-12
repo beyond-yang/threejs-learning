@@ -51,8 +51,9 @@
           if (item.geometry.type == "Polygon") {
             item.geometry.coordinates = [item.geometry.coordinates];
           }
+          const height = 2;
           lineGroup.add(getBoundaryLine(item.geometry.coordinates));
-          shapGroup.add(getExtrudeMeshShap(item.geometry.coordinates));
+          shapGroup.add(getExtrudeMeshShap(item.geometry.coordinates, height));
         });
         // 获取中国地图的中心点坐标
         const box3 = new THREE.Box3();
@@ -65,6 +66,18 @@
         console.log("中国地图尺寸大小======", mapSizeVector3);
         renderer.render(scene, camera); //执行渲染操作
       });
+
+      // 平行光1
+      var directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+      directionalLight.position.set(400, 200, 300);
+      scene.add(directionalLight);
+      // // 平行光2
+      var directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.6);
+      directionalLight2.position.set(-400, -200, -300);
+      scene.add(directionalLight2);
+      //环境光
+      var ambient = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambient);
 
       const width = window.innerWidth;
       const height = window.innerHeight;
