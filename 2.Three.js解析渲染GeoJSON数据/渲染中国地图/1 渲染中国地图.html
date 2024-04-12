@@ -27,6 +27,7 @@
       import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       import { getLine, getBoundaryLine } from "./line.js";
       import { getMeshShap } from "./meshShap.js";
+      import { getExtrudeMeshShap } from "./meshExtrude.js";
       // AxesHelper：辅助观察的坐标系
       const axesHelper = new THREE.AxesHelper(150);
       // 创建3D场景对象Scene
@@ -51,7 +52,7 @@
             item.geometry.coordinates = [item.geometry.coordinates];
           }
           lineGroup.add(getBoundaryLine(item.geometry.coordinates));
-          shapGroup.add(getMeshShap(item.geometry.coordinates));
+          shapGroup.add(getExtrudeMeshShap(item.geometry.coordinates));
         });
         // 获取中国地图的中心点坐标
         const box3 = new THREE.Box3();
